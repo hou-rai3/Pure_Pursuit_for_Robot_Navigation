@@ -3,21 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pure Pursuit Simulation - 4-Wheel Omni Robot</title>
+    <title>技術解説: Pure Pursuit法によるオムニロボット制御</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Pure Pursuit法 シミュレーション (4輪オムニホイール)</h1>
-    <div id="instructions">
-        <p>キャンバス内をクリックして、ロボットの目標経路を作成してください。</p>
+
+    <div class="container">
+        <div class="left-spacer"></div>
+        
+        <main>
+            <h1>Pure Pursuit法によるオムニロボット制御</h1>
+
+            <section id="overview">
+                <h2>1. 概要</h2>
+                <p>
+                    このページでは、ロボットの自律移動で広く使われる経路追従アルゴリズムの一つである<strong>Pure Pursuit（ピュア・パーシュート）法</strong>について解説します。
+                    特に、前後左右、斜め移動、回転が自由自在に行える<strong>4輪オムニホイールロボット</strong>を対象としたJavaScriptによるシミュレーションを実装し、その仕組みを紐解いていきます。
+                </p>
+                <h3>Pure Pursuit法とは</h3>
+                <p>
+                    Pure Pursuit法は、ロボットが指定された経路上の少し先にある「目標点（Look-ahead Point）」を常に追いかけ続けることで経路を追従するシンプルなアルゴリズムです。
+                    ロボットの現在位置から一定距離（Look-ahead Distance）だけ前方にある経路上の点を見つけ、その点に向かって進むように制御します。この「少し先を見る」という動作が、滑らかで安定した追従を実現する鍵となります。
+                </p>
+                <h3>4輪オムニホイールロボット</h3>
+                <p>
+                    通常の車輪と異なり、車輪の円周上に小さなローラーが取り付けられている特殊な車輪を「オムニホイール」と呼びます。これを4つ組み合わせることで、ロボットは向きを変えずに真横や斜めに移動（並進移動）できます。このような動きを<strong>ホロノミック</strong>な移動と呼びます。今回のシミュレーションでは、この自由度の高い動きを考慮して制御を設計します。
+                </p>
+            </section>
+
+            <section id="simulation">
+                <h2>2. シミュレーション</h2>
+                <p>
+                    以下は、実際にアルゴリズムが動作するシミュレーションです。
+                </p>
+                <div id="simulation-wrapper">
+                    <div id="instructions">
+                        <p>キャンバス内をクリックして、ロボットの目標経路（ウェイポイント）を作成してください。</p>
+                    </div>
+                    <canvas id="simulationCanvas" width="700" height="500"></canvas>
+                    <div id="controls">
+                        <button id="startButton">Start</button>
+                        <button id="resetButton">Reset</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="code-explanation">
+                <h2>3. 具体的な処理の解説</h2>
+                <p>
+                    シミュレーションはJavaScriptで構成されています。ここでは、その中核となる処理について解説します。
+                </p>
+
+                <h3>3-1. ロボットの定義 (`OmniRobot`クラス)</h3>
+                <p>
+                    まず、ロボットの状態（位置、角度）を管理し、動作をシミュレートするためのクラスを定義します。
+                </p>
+                <pre><code>class OmniRobot {
+    constructor(x, y, angle = 0) {
+        this.x = x; this.y = y; this.angle = angle;
+        this.radius = 20; // 見た目の半径
+        this.maxSpeed = 2.0; // 最大速度
+        this.turnSpeed = 0.05; // 最大旋回速度
+        this.current_vx = 0; // 現在のX方向速度(ロボット座標系)
+        this.current_vy = 0; // 現在のY方向速度(ロボット座標系)
+    }
+
+    // 速度指令値に基づいて位置と角度を更新
+    update(vx, vy, omega) {
+        this.current_vx = vx; this.current_vy = vy;
+
+        // ロボット座標系の速度をワールド座標系に変換
+        const world_vx = vx * Math.cos(this.angle) - vy * Math.sin(this.angle);
+        const world_vy = vx * Math.sin(this.angle) + vy * Math.cos(this.angle);
+
+        // 位置と角度を更新
+        this.x += world_vx;
+        this.y += world_vy;
+        this.angle += omega;
+    }
+
+    draw() { /* ... キャンバスへの描画処理 ... */ }
+}</code></pre>
+                <p>
+                    重要なのは<code>update</code>メソッドです。オムニロボットは自身の向きに対して前後(<code>vx</code>)・左右(<code>vy</code>)に動けるため、これらの「ロボットから見た速度」を、ロボットの現在の角度(<code>this.angle</code>)を使って「全体座標から見た速度(<code>world_vx</code>, <code>world_vy</code>)」に変換してから位置を更新しています。
+                </p>
+                
+                <h3>3-2. Pure Pursuitアルゴリズムの中核</h3>
+                <p>
+                    <code>purePursuit</code>関数がアルゴリズムの心臓部です。この関数は毎フレーム呼び出され、「次にロボットがどの方向に、どのくらいの速さで動くべきか」を計算します。
+                </p>
+                
+                <h4>① 目標点（Look-ahead Point）の探索</h4>
+                <p>
+                    アルゴリズムの最初のステップは、追跡すべき「目標点」を見つけることです。これは、<strong>ロボットの現在地を中心とする円（半径：先行探索距離）と、目標経路（線分）との交点</strong>として求められます。
+                </p>
+                <pre><code>// 先行探索距離(Look-ahead Distance)を計算
+// 速度が速いほど遠くを見るようにし、安定性を高める
+let lookaheadDistance = currentSpeed * k + minLookahead;
+lookaheadDistance = Math.max(minLookahead, Math.min(lookaheadDistance, maxLookahead));
+
+let targetPoint = null;
+
+// パスの各線分をチェックして、探索円との交点を探す
+for (let i = lastLookedSegmentIndex; i < path.length - 1; i++) {
+    const p1 = path[i]; const p2 = path[i + 1];
+    // 円と線分の交点を計算するヘルパー関数
+    const intersections = findCircleLineIntersections(robot, lookaheadDistance, p1, p2);
+
+    if (intersections.length > 0) {
+        // ... 交点が見つかった場合の処理 ...
+        targetPoint = /* 最適な交点 */;
+        break; // 目標点が見つかったらループを抜ける
+    }
+}</code></pre>
+                
+                <h4>② 最適な目標点の選択（重要ポイント）</h4>
+                <p>
+                    円と線分の交点は最大2つ見つかる可能性があります。また、ロボットの後方にある交点を選んでしまうと、ロボットが逆走しようとしてしまい、挙動がおかしくなります。
+                    そこで、このコードでは、見つかった交点の中から<strong>ロボットの進行方向前方にある点</strong>だけを候補として選択しています。
+                </p>
+                <pre><code>// 前方の交差点だけを選択する
+let forwardIntersections = [];
+const robotHeadingVec = { x: Math.cos(robot.angle), y: Math.sin(robot.angle) };
+
+for (const p of intersections) {
+    const vecToPoint = { x: p.x - robot.x, y: p.y - robot.y };
+    // 内積を計算して、点がロボットの前方にあるかチェック
+    const dotProduct = robotHeadingVec.x * vecToPoint.x + robotHeadingVec.y * vecToPoint.y;
+    if (dotProduct > 0) { // 内積が正なら前方
+        forwardIntersections.push(p);
+    }
+}</code></pre>
+                <p>
+                    ここでは、ロボットの向きを表すベクトルと、ロボットから交点へ向かうベクトルの<strong>内積（Dot Product）</strong>を計算しています。内積が正の値になる場合、2つのベクトルは同じような方向を向いている、つまり交点がロボットの前方にあると判断できます。これにより、ロボットは常に前進し続けます。
+                </p>
+
+                <h4>③ 制御指令値（速度）の計算</h4>
+                <p>
+                    目標点が決まったら、その点に向かって進むための速度を計算します。
+                </p>
+                <pre><code>// 【通常時】目標点が見つかった場合
+if (targetPoint) {
+    // 1. 目標点への方向（ワールド座標系）を計算
+    const world_dx = targetPoint.x - robot.x;
+    const world_dy = targetPoint.y - robot.y;
+    const world_target_angle = Math.atan2(world_dy, world_dx);
+
+    // 2. その方向に最大速度で進む速度ベクトルを計算
+    const desired_world_vx = robot.maxSpeed * Math.cos(world_target_angle);
+    const desired_world_vy = robot.maxSpeed * Math.sin(world_target_angle);
+    
+    // 3. ワールド座標系の速度を、ロボット座標系に変換
+    final_local_vx = desired_world_vx * Math.cos(-robot.angle) - desired_world_vy * Math.sin(-robot.angle);
+    final_local_vy = desired_world_vx * Math.sin(-robot.angle) + desired_world_vy * Math.cos(-robot.angle);
+
+    // 4. ロボットの向きを経路の向きに合わせるための回転速度(omega)を計算
+    final_omega = /* ... 角度の差に応じた回転速度 ... */;
+} else {
+    // 【最終地点接近時】目標点が見つからない（＝終点が近い）場合
+    // 終点に近づくにつれて減速する処理
+}</code></pre>
+                <p>
+                    この計算により、ロボットの並進移動（<code>vx</code>, <code>vy</code>）と回転（<code>omega</code>）が決定され、<code>OmniRobot</code>クラスの<code>update</code>メソッドに渡されてシミュレーションが進行します。
+                </p>
+
+            </section>
+        </main>
+        
+        <aside>
+            <div class="toc">
+                <h3>目次</h3>
+                <ul>
+                    <li><a href="#overview">1. 概要</a></li>
+                    <li><a href="#simulation">2. シミュレーション</a></li>
+                    <li><a href="#code-explanation">3. 具体的な処理の解説</a></li>
+                </ul>
+            </div>
+        </aside>
+
     </div>
-    <div id="simulation-container">
-        <canvas id="simulationCanvas" width="800" height="600"></canvas>
-    </div>
-    <div id="controls">
-        <button id="startButton">Start</button>
-        <button id="resetButton">Reset</button>
-    </div>
+
     <script src="main.js"></script>
 </body>
 </html>
