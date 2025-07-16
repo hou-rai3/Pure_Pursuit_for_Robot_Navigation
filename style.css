@@ -1,16 +1,143 @@
+/* ページ全体の基本スタイル */
 body {
-    font-family: sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.8;
     background-color: #f0f2f5;
     color: #333;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     margin: 0;
-    padding: 20px;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    display: flex;
+    max-width: 1200px;
+    width: 100%;
+    margin-top: 2rem;
+}
+
+/* 左側の余白 */
+.left-spacer {
+    flex: 1;
+}
+
+/* 中央のメインコンテンツ */
+main {
+    flex: 4;
+    padding: 0 2rem;
+    min-width: 0; /* flexアイテムの縮小を許可 */
+}
+
+/* 右側の固定目次 */
+aside {
+    flex: 1;
+    position: sticky;
+    top: 2rem;
+    align-self: flex-start;
+    height: calc(100vh - 4rem);
+}
+
+/* --- コンテンツのスタイル --- */
+section {
+    background-color: white;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+h1, h2, h3 {
+    color: #0056b3;
+    border-bottom: 2px solid #e7f3ff;
+    padding-bottom: 0.5rem;
+    margin-top: 0;
 }
 
 h1 {
+    font-size: 2.2rem;
+    text-align: center;
+    border: none;
+}
+
+h2 {
+    font-size: 1.8rem;
+}
+
+h3 {
+    font-size: 1.4rem;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+}
+
+p, li {
+    font-size: 1rem;
+}
+
+/* コードブロックのスタイル修正 */
+pre {
+    background-color: #f4f7f9;
+    color: #333;
+    border: 1px solid #dadedf;
+    padding: 1.5rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+}
+
+/* インラインコードのスタイル */
+p > code, li > code {
+    background-color: #e9ecef;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+}
+
+strong {
     color: #0056b3;
+}
+
+/* --- 目次のスタイル --- */
+.toc {
+    background-color: #e7f3ff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 5px solid #007bff;
+}
+
+.toc h3 {
+    margin-top: 0;
+    border: none;
+}
+
+.toc ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.toc li a {
+    text-decoration: none;
+    color: #0056b3;
+    display: block;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #cce5ff;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.toc li a:hover {
+    background-color: #cce5ff;
+}
+
+/* --- シミュレーション部分のスタイル --- */
+#simulation-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 #instructions {
@@ -18,16 +145,20 @@ h1 {
     padding: 10px;
     background-color: #e7f3ff;
     border-left: 5px solid #007bff;
-}
-
-#simulation-container {
-    margin-bottom: 15px;
+    width: 90%;
+    text-align: center;
 }
 
 #simulationCanvas {
     background-color: #e9ecef;
     border: 1px solid #ced4da;
     cursor: crosshair;
+    max-width: 100%;
+    height: auto;
+}
+
+#controls {
+    margin-top: 15px;
 }
 
 #controls button {
