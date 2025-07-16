@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>技術解説: Pure Pursuit法によるオムニロボット制御</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
     <div class="container">
         <div class="left-spacer"></div>
-        
+
         <main>
             <h1>Pure Pursuit法によるオムニロボット制御</h1>
 
@@ -23,7 +25,8 @@
                 <h3>Pure Pursuit法とは</h3>
                 <p>
                     Pure Pursuit法は、ロボットが指定された経路上の少し先にある「目標点（Look-ahead Point）」を常に追いかけ続けることで経路を追従するシンプルなアルゴリズムです。
-                    ロボットの現在位置から一定距離（Look-ahead Distance）だけ前方にある経路上の点を見つけ、その点に向かって進むように制御します。この「少し先を見る」という動作が、滑らかで安定した追従を実現する鍵となります。
+                    ロボットの現在位置から一定距離（Look-ahead
+                    Distance）だけ前方にある経路上の点を見つけ、その点に向かって進むように制御します。この「少し先を見る」という動作が、滑らかで安定した追従を実現する鍵となります。
                 </p>
                 <h3>4輪オムニホイールロボット</h3>
                 <p>
@@ -85,14 +88,15 @@
     draw() { /* ... キャンバスへの描画処理 ... */ }
 }</code></pre>
                 <p>
-                    重要なのは<code>update</code>メソッドです。オムニロボットは自身の向きに対して前後(<code>vx</code>)・左右(<code>vy</code>)に動けるため、これらの「ロボットから見た速度」を、ロボットの現在の角度(<code>this.angle</code>)を使って「全体座標から見た速度(<code>world_vx</code>, <code>world_vy</code>)」に変換してから位置を更新しています。
+                    重要なのは<code>update</code>メソッドです。オムニロボットは自身の向きに対して前後(<code>vx</code>)・左右(<code>vy</code>)に動けるため、これらの「ロボットから見た速度」を、ロボットの現在の角度(<code>this.angle</code>)を使って「全体座標から見た速度(<code>world_vx</code>,
+                    <code>world_vy</code>)」に変換してから位置を更新しています。
                 </p>
-                
+
                 <h3>3-2. Pure Pursuitアルゴリズムの中核</h3>
                 <p>
                     <code>purePursuit</code>関数がアルゴリズムの心臓部です。この関数は毎フレーム呼び出され、「次にロボットがどの方向に、どのくらいの速さで動くべきか」を計算します。
                 </p>
-                
+
                 <h4>① 目標点（Look-ahead Point）の探索</h4>
                 <p>
                     アルゴリズムの最初のステップは、追跡すべき「目標点」を見つけることです。これは、<strong>ロボットの現在地を中心とする円（半径：先行探索距離）と、目標経路（線分）との交点</strong>として求められます。
@@ -116,7 +120,7 @@ for (let i = lastLookedSegmentIndex; i < path.length - 1; i++) {
         break; // 目標点が見つかったらループを抜ける
     }
 }</code></pre>
-                
+
                 <h4>② 最適な目標点の選択（重要ポイント）</h4>
                 <p>
                     円と線分の交点は最大2つ見つかる可能性があります。また、ロボットの後方にある交点を選んでしまうと、ロボットが逆走しようとしてしまい、挙動がおかしくなります。
@@ -135,7 +139,8 @@ for (const p of intersections) {
     }
 }</code></pre>
                 <p>
-                    ここでは、ロボットの向きを表すベクトルと、ロボットから交点へ向かうベクトルの<strong>内積（Dot Product）</strong>を計算しています。内積が正の値になる場合、2つのベクトルは同じような方向を向いている、つまり交点がロボットの前方にあると判断できます。これにより、ロボットは常に前進し続けます。
+                    ここでは、ロボットの向きを表すベクトルと、ロボットから交点へ向かうベクトルの<strong>内積（Dot
+                        Product）</strong>を計算しています。内積が正の値になる場合、2つのベクトルは同じような方向を向いている、つまり交点がロボットの前方にあると判断できます。これにより、ロボットは常に前進し続けます。
                 </p>
 
                 <h4>③ 制御指令値（速度）の計算</h4>
@@ -164,12 +169,22 @@ if (targetPoint) {
     // 終点に近づくにつれて減速する処理
 }</code></pre>
                 <p>
-                    この計算により、ロボットの並進移動（<code>vx</code>, <code>vy</code>）と回転（<code>omega</code>）が決定され、<code>OmniRobot</code>クラスの<code>update</code>メソッドに渡されてシミュレーションが進行します。
+                    この計算により、ロボットの並進移動（<code>vx</code>,
+                    <code>vy</code>）と回転（<code>omega</code>）が決定され、<code>OmniRobot</code>クラスの<code>update</code>メソッドに渡されてシミュレーションが進行します。
                 </p>
 
             </section>
+            <section id="simulation">
+                <h2>4. おまけ</h2>
+                <p>
+                    全方向に移動できるオムニホイールなのに、なぜわざわざ向きを変えるのでしょうか。<br>
+                    その主な理由は、<strong>足回りであるオムニホイールの性能を最大限に引き出すため</strong>です。<br>
+                    実は、オムニホイールが最も高い速度と効率を発揮できるのは、機体の前後や左右への直進移動です。斜め方向に進む場合、複数のモーターの力を合成して動くため、どうしても最高速度が落ちてしまいます。<br>
+                    そのため、最初に目標点の方向を向くことで、最も速く移動できる<strong>「直進」という状態を作り出し</strong>、効率的に目的地へ向かっているのです。
+                </p>
+            </section>
         </main>
-        
+
         <aside>
             <div class="toc">
                 <h3>目次</h3>
@@ -185,4 +200,5 @@ if (targetPoint) {
 
     <script src="main.js"></script>
 </body>
+
 </html>
