@@ -184,3 +184,77 @@ strong {
 #controls #resetButton:hover {
     background-color: #a71d2a;
 }
+/* --- レスポンシブ対応 (スマートフォン向け) --- */
+@media (max-width: 768px) {
+    body {
+        /* 中央揃えをやめ、通常の表示に */
+        display: block;
+    }
+
+    .container {
+        /* PCの横並びから、スマホの縦積みに変更 */
+        flex-direction: column;
+        margin-top: 0;
+        width: 100%;
+    }
+
+    /* 左側の余白はスマホでは不要なので非表示に */
+    .left-spacer {
+        display: none;
+    }
+
+    /* メインコンテンツの調整 */
+    main {
+        order: 1; /* mainを先に表示 */
+        padding: 0 1rem;
+        flex: none; /* flexの比率指定を解除 */
+    }
+
+    /* 目次の調整 */
+    aside {
+        order: 2; /* mainの後に表示 */
+        position: static; /* 画面追従(sticky)を解除 */
+        height: auto;
+        width: auto;
+        margin: 0 1rem 2rem 1rem; /* 周辺の余白を調整 */
+    }
+
+    /* 見出しと本文の文字サイズをスマホ向けに調整 */
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.3rem; }
+    p, li { font-size: 0.95rem; }
+
+    section {
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    pre {
+        padding: 1rem;
+    }
+
+    /* シミュレーション部分のラッパー */
+    #simulation-wrapper {
+        width: 100%;
+    }
+    
+    /* canvasの表示サイズを親要素の100%に合わせる */
+    #simulationCanvas {
+        width: 100%;
+        height: auto; /* アスペクト比を維持 */
+    }
+
+    /* 操作ボタンを縦に並べて押しやすくする */
+    #controls {
+        display: flex;
+        flex-direction: column;
+        width: 90%;
+        gap: 10px; /* ボタン間の隙間 */
+    }
+
+    #controls button {
+        width: 100%;
+        margin: 0;
+    }
+}

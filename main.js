@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentSpeed = Math.hypot(robot.current_vx, robot.current_vy);
         let lookaheadDistance = currentSpeed * k + minLookahead;
         lookaheadDistance = Math.max(minLookahead, Math.min(lookaheadDistance, maxLookahead));
-        
+
         let targetPoint = null;
         let targetSegmentIndex = lastLookedSegmentIndex;
 
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const desired_world_vy = robot.maxSpeed * Math.sin(world_target_angle);
             final_local_vx = desired_world_vx * Math.cos(-robot.angle) - desired_world_vy * Math.sin(-robot.angle);
             final_local_vy = desired_world_vx * Math.sin(-robot.angle) + desired_world_vy * Math.cos(-robot.angle);
-            
+
             const prevPathSegment = path[targetSegmentIndex];
             const nextPathSegment = path[targetSegmentIndex + 1] ? path[targetSegmentIndex + 1] : prevPathSegment;
             const pathAngle = Math.atan2(nextPathSegment.y - prevPathSegment.y, nextPathSegment.x - prevPathSegment.x);
@@ -222,9 +222,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- イベントリスナー ---
     canvas.addEventListener('click', (e) => {
         if (simulationRunning) return;
+
         const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+
+        // canvasの描画解像度(width/height属性)と、CSSによる表示サイズ(rect.width/height)の比率を計算
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        // クリック座標を、描画解像度上の正しい位置に補正
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+
         path.push({ x, y });
     });
 
@@ -242,12 +250,12 @@ document.addEventListener('DOMContentLoaded', () => {
         robot = new OmniRobot(canvas.width / 2, canvas.height - 50, -Math.PI / 2);
         lastLookedSegmentIndex = 0;
     });
-    
+
     // --- 初期化処理 ---
     function init() {
         robot = new OmniRobot(canvas.width / 2, canvas.height - 50, -Math.PI / 2);
         animate();
     }
-    
+
     init();
 });
