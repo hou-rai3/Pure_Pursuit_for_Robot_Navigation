@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>技術解説: Pure Pursuit法によるオムニロボット制御</title>
+    <title>数学で動かすロボットシミュレーション</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -14,34 +14,26 @@
         <div class="left-spacer"></div>
 
         <main>
-            <h1>Pure Pursuit法によるオムニロボット制御</h1>
+            <h1>【JavaScript】数学で動かすロボットシミュレーション</h1>
 
             <section id="overview">
-                <h2>1. 概要</h2>
+                <h2>1.概要</h2>
                 <p>
-                    このページでは、ロボットの自律移動で広く使われる経路追従アルゴリズムの一つである<strong>Pure Pursuit（ピュア・パーシュート）法</strong>について解説します。
-                    特に、前後左右、斜め移動、回転が自由自在に行える<strong>4輪オムニホイールロボット</strong>を対象としたJavaScriptによるシミュレーションを実装し、その仕組みを紐解いていきます。
-                </p>
-                <h3>Pure Pursuit法とは</h3>
-                <p>
-                    Pure Pursuit法は、ロボットが指定された経路上の少し先にある「目標点（Look-ahead Point）」を常に追いかけ続けることで経路を追従するシンプルなアルゴリズムです。
-                    ロボットの現在位置から一定距離（Look-ahead
-                    Distance）だけ前方にある経路上の点を見つけ、その点に向かって進むように制御します。この「少し先を見る」という動作が、滑らかで安定した追従を実現する鍵となります。
-                </p>
-                <h3>4輪オムニホイールロボット</h3>
-                <p>
-                    通常の車輪と異なり、車輪の円周上に小さなローラーが取り付けられている特殊な車輪を「オムニホイール」と呼びます。これを4つ組み合わせることで、ロボットは向きを変えずに真横や斜めに移動（並進移動）できます。このような動きを<strong>ホロノミック</strong>な移動と呼びます。今回のシミュレーションでは、この自由度の高い動きを考慮して制御を設計します。
+                    ロボット自動制御で用いられる経路追従アルゴリズム「Pure
+                    Pursuit法」のシミュレーションをjsを使用して行う。JavaScriptの<strong>計算処理能力</strong>と<strong>リアルタイム描画能力</strong>を駆使することで、簡単なシミュレーションを示すことができる。
                 </p>
             </section>
 
             <section id="simulation-area">
-                <h2>2. シミュレーション</h2>
+                <h2>2. 製作物：Pure Pursuit法シミュレーション</h2>
                 <p>
-                    以下は、実際にアルゴリズムが動作するシミュレーションです。
+                    4輪オムニホイールのロボットが、指定された経路を自動で追いかける様子をシミュレートしたものである。ロボットの動きや、各ホイールの回転（青い矢印）がリアルタイムに計算され、描画される。
                 </p>
                 <div id="simulation-wrapper">
                     <div id="instructions">
-                        <p>キャンバス内をクリックして、ロボットの目標経路（ウェイポイント）を作成してください。</p>
+                        <p>操作方法:キャンバス内をクリックして経路を作成し、「Start」ボタンを押すと開始し「Reset」ボタンを押すと初期位置に戻る。<br>
+                            また、最初の経由点がロボットと離れていたり、経由点が離散していると予期せぬ動作をする場合がある。
+                        </p>
                     </div>
                     <canvas id="simulationCanvas" width="700" height="500"></canvas>
                     <div id="controls">
@@ -52,136 +44,92 @@
             </section>
 
             <section id="code-explanation">
-                <h2>3. 具体的な処理の解説</h2>
+                <h2>3. 今回使用したJavaScript技術</h2>
                 <p>
-                    シミュレーションはJavaScriptで構成されています。ここでは、その中核となる処理について解説します。
+                    このシミュレーションは、主に3つのJavaScript技術要素で構成されている。
+                </p>
+                <h3>技術①：Canvas APIによるリアルタイム描画</h3>
+                <p>
+                    ウェブページで要素を動かすというと「DOM操作」が一般的だが、このデモでは<code>&lt;canvas&gt;</code>要素を使っている。DOMがHTML要素をオブジェクトとして扱うのに対し、Canvasはピクセル単位で図形を描画するための画用紙のようなものである。これにより、毎フレーム変化するロボットの位置や角度、デバッグ用の円や矢印といった、<strong>自由で動的なグラフィックス表現</strong>が可能である。
+                </p>
+                <p>
+                    また、アニメーションには<code>requestAnimationFrame</code>を用いている。これはブラウザの描画サイクルと同期するため、<code>setInterval</code>などと比べて、より滑らかでパフォーマンスに優れたアニメーションを実現する現代的な手法である。
+                </p>
+                <pre><code>// 毎フレーム呼び出される描画ループ
+function animate() {
+    // 1. ロボットの位置や角度を計算
+    const result = purePursuit();
+    robot.update(result.control.vx, result.control.vy, result.control.omega);
+
+    // 2. Canvasをクリアし、すべてを描画し直す
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawPath();
+    robot.draw();
+    drawDebugInfo(result.debug);
+
+    // 3. 次の描画フレームを予約
+    animationFrameId = requestAnimationFrame(animate);
+}</code></pre>
+
+                <h3>技術②：三角関数とベクトル演算による計算処理</h3>
+                <p>
+                    このシミュレーションの心臓部は、<strong>数学</strong>である。ロボットの滑らかな動きは、三角関数やベクトルといった計算処理によって実現されている。
+                </p>
+                <ul>
+                    <li><strong>座標変換：</strong>ロボットの向き（角度）に応じて、ロボットから見た前後左右の速度を、<code>Math.sin()</code> と
+                        <code>Math.cos()</code> を使って画面全体から見た速度ベクトルに変換している。
+                    </li>
+                    <li><strong>目標点探索：</strong>ロボットと経路との距離を三平方の定理（<code>Math.hypot()</code>）で計算し、追従すべき目標点を見つけ出している。</li>
+                    <li><strong>ベクトルの内積：</strong>目標点が複数見つかった場合に、ロボットの「前方」にある点を正しく選択するため、ベクトルの内積を計算し、その符号（正か負か）を利用している。
+                    </li>
+                </ul>
+                <p>
+                    このように、JavaScriptに標準で備わっている<code>Math</code>オブジェクトを活用するだけで、物理法則に基づいた複雑なシミュレーションを構築できる。
                 </p>
 
-                <h3>3-1. ロボットの定義 (`OmniRobot`クラス)</h3>
+                <h3>技術③：ES6 Classesによるオブジェクト指向設計</h3>
                 <p>
-                    まず、ロボットの状態（位置、角度）を管理し、動作をシミュレートするためのクラスを定義します。
+                    コードを整理し、メンテナンス性を高めるために、ES6で導入された<code>class</code>構文を利用している。ロボットに関するデータ（位置、角度、半径など）と、その振る舞い（更新、描画など）を<code>OmniRobot</code>という一つのクラスにまとめている。
+                </p>
+                <p>
+                    このように関連する処理をひとまとめにする（カプセル化）ことで、コードの見通しが良くなり、他の部分から独立した「部品」として扱えるようになる。これは、大規模なアプリケーションを開発する上で非常に重要な考え方である。
                 </p>
                 <pre><code>class OmniRobot {
+    // データ（プロパティ）
     constructor(x, y, angle = 0) {
-        this.x = x; this.y = y; this.angle = angle;
-        this.radius = 20; // 見た目の半径
-        this.maxSpeed = 2.0; // 最大速度
-        this.turnSpeed = 0.05; // 最大旋回速度
-        this.current_vx = 0; // 現在のX方向速度(ロボット座標系)
-        this.current_vy = 0; // 現在のY方向速度(ロボット座標系)
+        this.x = x;
+        this.y = y;
+        this.angle = angle;
+        // ...
     }
 
-    // 速度指令値に基づいて位置と角度を更新
-    update(vx, vy, omega) {
-        this.current_vx = vx; this.current_vy = vy;
+    // 振る舞い（メソッド）
+    update(vx, vy, omega) { /* ... 位置や角度を更新する計算 ... */ }
+    draw() { /* ... 自分自身をCanvasに描画する処理 ... */ }
+}
 
-        // ロボット座標系の速度をワールド座標系に変換
-        const world_vx = vx * Math.cos(this.angle) - vy * Math.sin(this.angle);
-        const world_vy = vx * Math.sin(this.angle) + vy * Math.cos(this.angle);
-
-        // 位置と角度を更新
-        this.x += world_vx;
-        this.y += world_vy;
-        this.angle += omega;
-    }
-
-    draw() { /* ... キャンバスへの描画処理 ... */ }
-}</code></pre>
-                <p>
-                    重要なのは<code>update</code>メソッドです。オムニロボットは自身の向きに対して前後(<code>vx</code>)・左右(<code>vy</code>)に動けるため、これらの「ロボットから見た速度」を、ロボットの現在の角度(<code>this.angle</code>)を使って「全体座標から見た速度(<code>world_vx</code>,
-                    <code>world_vy</code>)」に変換してから位置を更新しています。
-                </p>
-
-                <h3>3-2. Pure Pursuitアルゴリズムの中核</h3>
-                <p>
-                    <code>purePursuit</code>関数がアルゴリズムの心臓部です。この関数は毎フレーム呼び出され、「次にロボットがどの方向に、どのくらいの速さで動くべきか」を計算します。
-                </p>
-
-                <h4>① 目標点（Look-ahead Point）の探索</h4>
-                <p>
-                    アルゴリズムの最初のステップは、追跡すべき「目標点」を見つけることです。これは、<strong>ロボットの現在地を中心とする円（半径：先行探索距離）と、目標経路（線分）との交点</strong>として求められます。
-                </p>
-                <pre><code>// 先行探索距離(Look-ahead Distance)を計算
-// 速度が速いほど遠くを見るようにし、安定性を高める
-let lookaheadDistance = currentSpeed * k + minLookahead;
-lookaheadDistance = Math.max(minLookahead, Math.min(lookaheadDistance, maxLookahead));
-
-let targetPoint = null;
-
-// パスの各線分をチェックして、探索円との交点を探す
-for (let i = lastLookedSegmentIndex; i < path.length - 1; i++) {
-    const p1 = path[i]; const p2 = path[i + 1];
-    // 円と線分の交点を計算するヘルパー関数
-    const intersections = findCircleLineIntersections(robot, lookaheadDistance, p1, p2);
-
-    if (intersections.length > 0) {
-        // ... 交点が見つかった場合の処理 ...
-        targetPoint = /* 最適な交点 */;
-        break; // 目標点が見つかったらループを抜ける
-    }
-}</code></pre>
-
-                <h4>② 最適な目標点の選択（重要ポイント）</h4>
-                <p>
-                    円と線分の交点は最大2つ見つかる可能性があります。また、ロボットの後方にある交点を選んでしまうと、ロボットが逆走しようとしてしまい、挙動がおかしくなります。
-                    そこで、このコードでは、見つかった交点の中から<strong>ロボットの進行方向前方にある点</strong>だけを候補として選択しています。
-                </p>
-                <pre><code>// 前方の交差点だけを選択する
-let forwardIntersections = [];
-const robotHeadingVec = { x: Math.cos(robot.angle), y: Math.sin(robot.angle) };
-
-for (const p of intersections) {
-    const vecToPoint = { x: p.x - robot.x, y: p.y - robot.y };
-    // 内積を計算して、点がロボットの前方にあるかチェック
-    const dotProduct = robotHeadingVec.x * vecToPoint.x + robotHeadingVec.y * vecToPoint.y;
-    if (dotProduct > 0) { // 内積が正なら前方
-        forwardIntersections.push(p);
-    }
-}</code></pre>
-                <p>
-                    ここでは、ロボットの向きを表すベクトルと、ロボットから交点へ向かうベクトルの<strong>内積（Dot
-                        Product）</strong>を計算しています。内積が正の値になる場合、2つのベクトルは同じような方向を向いている、つまり交点がロボットの前方にあると判断できます。これにより、ロボットは常に前進し続けます。
-                </p>
-
-                <h4>③ 制御指令値（速度）の計算</h4>
-                <p>
-                    目標点が決まったら、その点に向かって進むための速度を計算します。
-                </p>
-                <pre><code>// 【通常時】目標点が見つかった場合
-if (targetPoint) {
-    // 1. 目標点への方向（ワールド座標系）を計算
-    const world_dx = targetPoint.x - robot.x;
-    const world_dy = targetPoint.y - robot.y;
-    const world_target_angle = Math.atan2(world_dy, world_dx);
-
-    // 2. その方向に最大速度で進む速度ベクトルを計算
-    const desired_world_vx = robot.maxSpeed * Math.cos(world_target_angle);
-    const desired_world_vy = robot.maxSpeed * Math.sin(world_target_angle);
-    
-    // 3. ワールド座標系の速度を、ロボット座標系に変換
-    final_local_vx = desired_world_vx * Math.cos(-robot.angle) - desired_world_vy * Math.sin(-robot.angle);
-    final_local_vy = desired_world_vx * Math.sin(-robot.angle) + desired_world_vy * Math.cos(-robot.angle);
-
-    // 4. ロボットの向きを経路の向きに合わせるための回転速度(omega)を計算
-    final_omega = /* ... 角度の差に応じた回転速度 ... */;
-} else {
-    // 【最終地点接近時】目標点が見つからない（＝終点が近い）場合
-    // 終点に近づくにつれて減速する処理
-}</code></pre>
-                <p>
-                    この計算により、ロボットの並進移動（<code>vx</code>,
-                    <code>vy</code>）と回転（<code>omega</code>）が決定され、<code>OmniRobot</code>クラスの<code>update</code>メソッドに渡されてシミュレーションが進行します。
-                </p>
+// クラスから実体（インスタンス）を作成
+const robot = new OmniRobot(100, 100, 0);</code></pre>
 
             </section>
-            
+
             <section id="appendix">
-                <h2>4. おまけ</h2>
+                <h2>4. おまけ：なぜ並進と回転を独立して制御するのか？</h2>
                 <p>
-                    全方向に移動できるオムニホイールなのに、なぜわざわざ向きを変えるのでしょうか。<br>
-                    その主な理由は、<strong>足回りであるオムニホイールの性能を最大限に引き出すため</strong>です。<br>
-                    実は、オムニホイールが最も高い速度と効率を発揮できるのは、機体の前後や左右への直進移動です。斜め方向に進む場合、複数のモーターの力を合成して動くため、どうしても最高速度が落ちてしまいます。<br>
-                    そのため、最初に目標点の方向を向くことで、最も速く移動できる<strong>「直進」という状態を作り出し</strong>、効率的に目的地へ向かっているのです。
+                    このシミュレーションをよく見ると、ロボットは目標点に向かって進む動き（並進）と、体の向きを経路に合わせる動き（回転）を同時に行っている。全方向に移動できるのに、なぜわざわざ向きを変えるのか？と疑問に思うかもしれない。
+                </p>
+                <p>
+                    これこそが、このオムニロボットが持つ<strong>「ホロノミック（holonomic）」</strong>という特性を活かした高度な制御方法の現れである。自動車と違い、このロボットは「移動方向」と「体の向き」を完全に分離して制御できる。
+                </p>
+                <ul>
+                    <li><strong>並進制御：</strong>「経路から外れない」というタスクに専念し、最短で目標点に向かう。</li>
+                    <li><strong>回転制御：</strong>「体の正面を経路に向ける」という別のタスクに専念する。</li>
+                </ul>
+                <p>
+                    このおかげで、例えばロボットの正面にカメラが付いている場合、常に進行方向を撮影しながら、経路追従のための細かな横移動も同時に行う、といった器用な動作が可能になる。
+                </p>
+                <p>
+                    このようにJavaScriptは、Webページの制作だけでなく、<strong>科学技術計算や教育用のインタラクティブなシミュレータ開発</strong>においても、非常に強力なツールとなり得る。
                 </p>
             </section>
         </main>
@@ -191,9 +139,9 @@ if (targetPoint) {
                 <h3>目次</h3>
                 <ul>
                     <li><a href="#overview">1. 概要</a></li>
-                    <li><a href="#simulation-area">2. シミュレーション</a></li>
-                    <li><a href="#code-explanation">3. 具体的な処理の解説</a></li>
-                    <li><a href="#appendix">4. おまけ</a></li>
+                    <li><a href="#simulatrea">2. 作ったもの：Pure Pursuit法シミュレーション</a></li>
+                    <li><a href="#code-explanation">3. このデモを支えるJavaScript技術</a></li>
+                    <li><a href="#appendix">4. おまけ：なぜ並進と回転を独立して制御するのか？</a></li>
                 </ul>
             </div>
         </aside>
