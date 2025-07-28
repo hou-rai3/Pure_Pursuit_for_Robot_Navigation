@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>数学で動かすロボットシミュレーション</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="main.css">
 </head>
 
 <body>
@@ -17,11 +17,12 @@
             <h1>【JavaScript】数学で動かすロボットシミュレーション</h1>
 
             <section id="overview">
-                <h2>1.概要</h2>
+                <h2>1. 概要</h2>
                 <p>
                     ロボット自動制御で用いられる経路追従アルゴリズム「Pure
                     Pursuit法」のシミュレーションをjsを使用して行う。JavaScriptの<strong>計算処理能力</strong>と<strong>リアルタイム描画能力</strong>を駆使することで、簡単なシミュレーションを示すことができる。
                 </p>
+                <img src="diagram.png" alt="Pure Pursuitアルゴリズムの解説図" class="content-image">
             </section>
 
             <section id="simulation-area">
@@ -121,13 +122,14 @@ const robot = new OmniRobot(100, 100, 0);</code></pre>
                 <p>
                     これこそが、このオムニロボットが持つ<strong>「ホロノミック（holonomic）」</strong>という特性を活かした高度な制御方法の現れである。自動車と違い、このロボットは「移動方向」と「体の向き」を完全に分離して制御できる。
                 </p>
+                <img src="photo.jpg" alt="オムニホイールロボットの写真" class="content-image">
                 <ul>
                     <li><strong>並進制御：</strong>「経路から外れない」というタスクに専念し、最短で目標点に向かう。</li>
                     <li><strong>回転制御：</strong>「体の正面を経路に向ける」という別のタスクに専念する。</li>
                 </ul>
                 <p>
                     このおかげで、例えばロボットの正面にカメラが付いている場合、常に進行方向を撮影しながら、経路追従のための細かな横移動も同時に行う、といった器用な動作が可能になる。
-               <br>
+                    <br>
                     製作時間：約9時間
                 </p>
             </section>
@@ -138,8 +140,8 @@ const robot = new OmniRobot(100, 100, 0);</code></pre>
                 <h3>目次</h3>
                 <ul>
                     <li><a href="#overview">1. 概要</a></li>
-                    <li><a href="#simulatrea">2. 作ったもの：Pure Pursuit法シミュレーション</a></li>
-                    <li><a href="#code-explanation">3. このデモを支えるJavaScript技術</a></li>
+                    <li><a href="#simulation-area">2. 製作物：Pure Pursuit法シミュレーション</a></li>
+                    <li><a href="#code-explanation">3. 今回使用したJavaScript技術</a></li>
                     <li><a href="#appendix">4. おまけ：なぜ並進と回転を独立して制御するのか？</a></li>
                 </ul>
             </div>

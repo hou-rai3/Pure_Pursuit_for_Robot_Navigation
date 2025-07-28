@@ -1,0 +1,274 @@
+/* ページ全体の基本スタイル */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.8;
+    background-color: #f0f2f5;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    display: flex;
+    max-width: 1200px;
+    width: 100%;
+    margin-top: 2rem;
+}
+
+/* 左側の余白 */
+.left-spacer {
+    flex: 1;
+}
+
+/* 中央のメインコンテンツ */
+main {
+    flex: 4;
+    padding: 0 2rem;
+    min-width: 0; /* flexアイテムの縮小を許可 */
+}
+
+/* 右側の固定目次 */
+aside {
+    flex: 1;
+    position: sticky;
+    top: 2rem;
+    align-self: flex-start;
+    height: calc(100vh - 4rem);
+}
+
+/* --- コンテンツのスタイル --- */
+section {
+    background-color: white;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* コンテンツ内に追加した画像用のスタイル */
+.content-image {
+    max-width: 60%; /* 画像の最大幅をセクションの60%に */
+    height: auto;
+    display: block;
+    margin: 1.5rem auto; /* 上下のマージンと中央揃え */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+h1, h2, h3 {
+    color: #0056b3;
+    border-bottom: 2px solid #e7f3ff;
+    padding-bottom: 0.5rem;
+    margin-top: 0;
+}
+
+h1 {
+    font-size: 2.2rem;
+    text-align: center;
+    border: none;
+}
+
+h2 {
+    font-size: 1.8rem;
+}
+
+h3 {
+    font-size: 1.4rem;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+}
+
+p, li {
+    font-size: 1rem;
+}
+
+/* コードブロックのスタイル修正 */
+pre {
+    background-color: #f4f7f9;
+    color: #333;
+    border: 1px solid #dadedf;
+    padding: 1.5rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+}
+
+/* インラインコードのスタイル */
+p > code, li > code {
+    background-color: #e9ecef;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+}
+
+strong {
+    color: #0056b3;
+}
+
+/* --- 目次のスタイル --- */
+.toc {
+    background-color: #e7f3ff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 5px solid #007bff;
+}
+
+.toc h3 {
+    margin-top: 0;
+    border: none;
+}
+
+.toc ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.toc li a {
+    text-decoration: none;
+    color: #0056b3;
+    display: block;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #cce5ff;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.toc li a:hover {
+    background-color: #cce5ff;
+}
+
+/* --- シミュレーション部分のスタイル --- */
+#simulation-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#instructions {
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #e7f3ff;
+    border-left: 5px solid #007bff;
+    width: 90%;
+    text-align: center;
+}
+
+#simulationCanvas {
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+    cursor: crosshair;
+    max-width: 100%;
+    height: auto;
+}
+
+#controls {
+    margin-top: 15px;
+}
+
+#controls button {
+    font-size: 16px;
+    padding: 10px 20px;
+    margin: 0 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+#controls button:hover {
+    background-color: #0056b3;
+}
+
+#controls #resetButton {
+    background-color: #dc3545;
+}
+
+#controls #resetButton:hover {
+    background-color: #a71d2a;
+}
+/* --- レスポンシブ対応 (スマートフォン向け) --- */
+@media (max-width: 768px) {
+    body {
+        /* 中央揃えをやめ、通常の表示に */
+        display: block;
+    }
+
+    .container {
+        /* PCの横並びから、スマホの縦積みに変更 */
+        flex-direction: column;
+        margin-top: 0;
+        width: 100%;
+    }
+
+    /* 左側の余白はスマホでは不要なので非表示に */
+    .left-spacer {
+        display: none;
+    }
+
+    /* メインコンテンツの調整 */
+    main {
+        order: 1; /* mainを先に表示 */
+        padding: 0 1rem;
+        flex: none; /* flexの比率指定を解除 */
+    }
+
+    /* 目次の調整 */
+    aside {
+        order: 2; /* mainの後に表示 */
+        position: static; /* 画面追従(sticky)を解除 */
+        height: auto;
+        width: auto;
+        margin: 0 1rem 2rem 1rem; /* 周辺の余白を調整 */
+    }
+
+    /* 見出しと本文の文字サイズをスマホ向けに調整 */
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.3rem; }
+    p, li { font-size: 0.95rem; }
+
+    section {
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    pre {
+        padding: 1rem;
+    }
+    
+    .content-image {
+        max-width: 90%; /* スマホでは画像を大きく表示 */
+    }
+
+    /* シミュレーション部分のラッパー */
+    #simulation-wrapper {
+        width: 100%;
+    }
+    
+    /* canvasの表示サイズを親要素の100%に合わせる */
+    #simulationCanvas {
+        width: 100%;
+        height: auto; /* アスペクト比を維持 */
+    }
+
+    /* 操作ボタンを縦に並べて押しやすくする */
+    #controls {
+        display: flex;
+        flex-direction: column;
+        width: 90%;
+        gap: 10px; /* ボタン間の隙間 */
+    }
+
+    #controls button {
+        width: 100%;
+        margin: 0;
+    }
+}
