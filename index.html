@@ -22,7 +22,7 @@
                     ロボット自動制御で用いられる経路追従アルゴリズム「Pure
                     Pursuit法」のシミュレーションをjsを使用して行う。JavaScriptの<strong>計算処理能力</strong>と<strong>リアルタイム描画能力</strong>を駆使することで、簡単なシミュレーションを示すことができる。
                 </p>
-                <img src="diagram.png" alt="Pure Pursuitアルゴリズムの解説図" class="content-image">
+                <img src="pure_pursuit1.png" alt="Pure Pursuitアルゴリズムの解説図" class="content-image">
             </section>
 
             <section id="simulation-area">
@@ -122,7 +122,7 @@ const robot = new OmniRobot(100, 100, 0);</code></pre>
                 <p>
                     これこそが、このオムニロボットが持つ<strong>「ホロノミック（holonomic）」</strong>という特性を活かした高度な制御方法の現れである。自動車と違い、このロボットは「移動方向」と「体の向き」を完全に分離して制御できる。
                 </p>
-                <img src="photo.jpg" alt="オムニホイールロボットの写真" class="content-image">
+                <img src="omuni.png" alt="オムニホイールロボットの写真" class="content-image">
                 <ul>
                     <li><strong>並進制御：</strong>「経路から外れない」というタスクに専念し、最短で目標点に向かう。</li>
                     <li><strong>回転制御：</strong>「体の正面を経路に向ける」という別のタスクに専念する。</li>
